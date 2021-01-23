@@ -15,10 +15,10 @@ forget_interval = 1  # 遗忘间隔
 fix_first_interval = True  # 是否固定第一个间隔
 forget_index = 1 - request_retention  # 遗忘比率
 interval_modifier = np.log(request_retention) / np.log(fix_retention)  # 间隔修饰
-deck_size = 1000  # 新卡片总量
-card_per_day_limit = 999  # 每日学习总上限
+deck_size = 10000  # 新卡片总量
+card_per_day_limit = 9999  # 每日学习总上限
 new_card_limit = 50  # 每日新卡片上限
-learn_days = 30  # 模拟时长
+learn_days = 300  # 模拟时长
 interval_limit = learn_days  # 最大间隔
 period_len = 1  # 滚动平均区间
 avg_reps_forget = 1
@@ -57,7 +57,8 @@ for day in range(0, learn_days):
         next_interval = first_interval if fix_first_interval else max(int(round(start_stability * interval_modifier)),
                                                                       1)
         if i > card_per_day[day]['new']:
-            next_interval = start_stability
+            next_interval = forget_interval if fix_first_interval else max(int(round(start_stability * interval_modifier)),
+                                                                      1)
         next_due = day + next_interval
         while next_due < learn_days and next_interval < interval_limit:
             true_forget_index = 1 - np.exp(
