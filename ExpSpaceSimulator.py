@@ -57,8 +57,9 @@ for day in range(0, learn_days):
         next_interval = first_interval if fix_first_interval else max(int(round(start_stability * interval_modifier)),
                                                                       1)
         if i > card_per_day[day]['new']:
-            next_interval = forget_interval if fix_first_interval else max(int(round(start_stability * interval_modifier)),
-                                                                      1)
+            next_interval = forget_interval if fix_first_interval else max(
+                int(round(start_stability * interval_modifier)),
+                1)
         next_due = day + next_interval
         while next_due < learn_days and next_interval < interval_limit:
             true_forget_index = 1 - np.exp(
