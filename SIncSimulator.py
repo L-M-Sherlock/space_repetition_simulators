@@ -26,6 +26,7 @@ class Item:
         self.ivl_history = []
         self.fb_history = []
         self.lapse = 0
+        self.difficulty = round(random.triangular(), 1)
 
     def review(self, date):
         self.__calculate_r(date)
@@ -49,7 +50,7 @@ class Item:
 
     def __calculate_sinc(self):
         # self.SInc = - a * np.power(self.S, -b) * (np.exp(1 - self.R) - 1) * 1.1 + 1
-        self.SInc = a * np.power(self.S, -b) * np.log(self.R) + 1
+        self.SInc = (5 * (1 - self.difficulty) + 1) * (a * np.power(self.S, -b) * np.log(self.R)) + 1
 
     def __update_s(self):
         self.S *= self.SInc
@@ -85,7 +86,7 @@ if __name__ == '__main__':
     new_card_per_day_average_per_period = np.array([0.0] * learn_days)
     workload_per_day = np.array([0.0] * learn_days)
     workload_per_day_average_per_period = np.array([0.0] * learn_days)
-    revlog = np.empty(shape=[0, 6], dtype=np.object)
+    revlog = np.empty(shape=[0, 7], dtype=object)
 
     for day in range(0, learn_days):
         card_per_day[day]['new'] = min(max(0, card_per_day_limit - len(item_per_day[day])),
@@ -105,13 +106,14 @@ if __name__ == '__main__':
 
         if len(items) > 0:
             end_day = day
-        today_revlog = np.empty(shape=[len(item_per_day[day]), 6], dtype=np.object)
+        today_revlog = np.empty(shape=[len(item_per_day[day]), 7], dtype=object)
         for idx, item in enumerate(item_per_day[day]):
             ivl_history = str(item.ivl_history)[1:-1]
             fb_history = str(item.fb_history)[1:-1]
             old_S = round(item.S, 1)
             item.review(day)
-            today_revlog[idx] = [ivl_history, fb_history, item.used_ivl, item.feedback, round(item.R, 3), old_S]
+            today_revlog[idx] = [ivl_history, fb_history, item.used_ivl, item.feedback, round(item.R, 3), old_S,
+                                 item.difficulty]
             forget_index = random.triangular(0.05, 0.2, 0.1)
             ivl = int(round(item.interval_threshold(1 - forget_index)))
             # ivl = int(round(ivl) * 5 * round(random.uniform(0.15, 1.04), 1))
@@ -133,7 +135,7 @@ if __name__ == '__main__':
     #         item.review(learn_days + 1)
     #         recall += item.R
     print("数据条数", len(revlog))
-    result = pd.DataFrame(revlog, columns=["ivl_history", "fb_history", "used_ivl", "feedback", "R", "S"])
+    result = pd.DataFrame(revlog, columns=["ivl_history", "fb_history", "used_ivl", "feedback", "R", "S", "D"])
     result.to_csv(f"revlog{int(time.time())}.tsv", sep="\t", index=False)
     total_learned = int(sum(new_card_per_day))
     print("learn all item day:", end_day + 1)

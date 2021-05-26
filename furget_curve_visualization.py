@@ -30,7 +30,7 @@ def _compute_bin_count(group):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv("revlog1617713653.tsv", sep="\t", keep_default_na=False)
+    df = pd.read_csv("revlog1622051996.tsv", sep="\t", keep_default_na=False)
     fb_group = df.groupby(["fb_history"])
 
     for fb_history, fb_batch in fb_group:
@@ -93,3 +93,31 @@ if __name__ == '__main__':
             # plt.show()
             plt.savefig('./plot/' + title + '.jpg')
             plt.close()
+
+            diff_group = ivl_batch.groupby(["D"])
+            for diff, diff_batch in diff_group:
+                global_count = diff_batch.groupby(
+                    diff_batch['used_ivl']
+                ).apply(_compute_bin_count).reset_index().drop(['level_1'], axis=1)[:40]
+                global_forget_curve = diff_batch.groupby(
+                    diff_batch['used_ivl']
+                ).apply(_compute_bin_p_recall).reset_index().drop(['level_1'], axis=1)[:40]
+                global_R = diff_batch.groupby(
+                    diff_batch['used_ivl']
+                ).apply(_compute_bin_r).reset_index().drop(['level_1'], axis=1)[:40]
+                plt.figure()
+                title = f"反馈序列[{fb_history}]_间隔序列[{ivl_history}]_难度[{diff}]_数据量{len(diff_batch)}"
+                plt.title(title)
+                plt.xlabel('used_ivl')
+                plt.ylabel('count')
+                plt.bar(global_count['used_ivl'], global_count['count'], alpha=0.2)
+                plt.xticks(diff_batch['used_ivl'].drop_duplicates().sort_values())
+                plt.twinx()
+                plt.plot(global_R['used_ivl'], global_R['R'], 'g*-')
+                plt.plot(global_forget_curve['used_ivl'], global_forget_curve['r'], 'r*-')
+                plt.ylim([0.5, 1.0])
+                plt.ylabel('R')
+                # plt.show()
+                plt.savefig('./plot/' + title + '.jpg')
+                plt.close()
+
