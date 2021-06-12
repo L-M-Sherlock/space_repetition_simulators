@@ -1,10 +1,9 @@
-import numpy as np
 import random
 from collections import deque
-from scipy import optimize
+
 import matplotlib.pyplot as plt
-import pandas as pd
-import time
+import numpy as np
+from scipy import optimize
 
 plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
 plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
@@ -28,7 +27,8 @@ class Item:
         self.ivl_history = []
         self.fb_history = []
         self.lapse = 0
-        self.difficulty = round(random.triangular(), 1)
+        # self.difficulty = round(random.triangular(), 1)
+        self.difficulty = 0.5
         self.ivl = start_stability
         self.r = 0
 
@@ -55,30 +55,45 @@ class Item:
             self.R = np.exp(np.log(0.9) * (date - self.last_review) / self.S)
             self.r = np.exp(np.log(0.9) * (date - self.last_review) / self.ivl)
         else:
-            self.R = 0.9
-            self.r = 0.9
+            self.R = 1
+            self.r = 1
 
     def __calculate_sinc(self):
         # self.SInc = - a * np.power(self.S, -b) * (np.exp(1 - self.R) - 1) * 1.1 + 1
-        self.SInc = (5 * (1 - self.difficulty) + 1) * (a * np.power(self.S, -b) * np.log(self.R)) + 1
+        self.SInc = (1.5 - self.difficulty) * (a * np.power(self.S, -b) * np.log(self.R)) + 1
 
     def __update_s(self):
         self.S *= self.SInc
 
     def __update_ivl(self):
-        self.ivl *= 3.5 * (a * np.power(self.ivl, -b) * np.log(self.r)) + 1
+        self.ivl *= a * np.power(self.ivl, -b) * np.log(self.r) + 1
 
     def interval_threshold(self, threshold):
+        esinc = threshold * (a * np.power(self.S, -b) * np.log(threshold) + 1)
         return int(round(max(1, np.log(threshold) / np.log(0.9) * self.S), 0))
 
-    def interval_max_esinc(self):
-        def esinc(x):
-            return - x * (a * np.power(self.S, -b) * np.log(x) + 1)
+    def interval_optimize(self, flag):
+        def max_expected_s(x):
+            return - (x * self.S * (a * np.power(self.S, -b) * np.log(x) + 1) + (1 - x))
 
-        def esinc2(x):
-            return - x * (- 1.1 * a * np.power(self.S, -b) * (np.exp(1 - x) - 1) + 1)
+        def min_stress_inverse(x):
+            return x / (self.S * (a * np.power(self.S, -b) * np.log(x) + 1)) + 1 - x + np.log(0.9) / np.log(x)
 
-        r = optimize.fminbound(esinc2, 0, 1)
+        def min_stress_sqrt(x):
+            return - (x * np.power(self.S * (a * np.power(self.S, -b) * np.log(x) + 1), 1 / 2)
+                      + (1 - x) * np.power(1, 1 / 2)) + np.log(0.9) / np.log(x)
+
+        def min_stress_log(x):
+            return - (x * np.log(self.S * (a * np.power(self.S, -b) * np.log(x) + 1))
+                      + (1 - x) * np.log(1)) + np.log(0.9) / np.log(x)
+
+        r = 0.9
+        if flag == 0:
+            r = optimize.fminbound(min_stress_log, 0, 1)
+        elif flag == -1:
+            r = optimize.fminbound(min_stress_inverse, 0, 1)
+        elif flag == -2:
+            r = optimize.fminbound(min_stress_sqrt, 0, 1)
         return int(round(max(1, np.log(r) / np.log(0.9) * self.S), 0))
 
     def interval_spread(self, threshold):
@@ -86,11 +101,9 @@ class Item:
 
 
 if __name__ == '__main__':
-    forget_indexes = [0.05, 0.1, 0.2, 0.4, 0.6, 0]
-    plt.grid(True)
-    plt.xlabel("时间/天")
-    period_len = 30  # 滚动平均区间
-    learn_days = 2000  # 模拟时长
+    forget_indexes = [-2, -1, 0, 0.4]
+    period_len = 60  # 滚动平均区间
+    learn_days = 4000  # 模拟时长
     deck_size = 25000  # 新卡片总量
     for fi in range(len(forget_indexes)):
         items_all = [Item() for _ in range(0, deck_size)]
@@ -139,8 +152,10 @@ if __name__ == '__main__':
                                      item.difficulty]
                 # forget_index = random.triangular(0.1, 0.4, 0.2)
                 # ivl = int(round(item.interval_spread(1 - forget_index)))
-                ivl = int(
-                    round(item.interval_threshold(1 - forget_index) if forget_index > 0 else item.interval_max_esinc()))
+                if forget_index > 0:
+                    ivl = int(round(item.interval_threshold(1 - forget_index)))
+                else:
+                    ivl = int(round(item.interval_optimize(forget_index)))
                 # ivl = int(round(ivl) * 5 * round(random.uniform(0.15, 1.04), 1))
                 # ivl = item.interval_max_esinc()
                 delay = 0
@@ -174,6 +189,8 @@ if __name__ == '__main__':
         plt.plot(workload_per_day_average_per_period,
                  label=f'遗忘指数{forget_index:.2f}/保留量{int(recall)}/总复习量{total_reviewed}')
         plt.title(f"总学习量{total_learned}")
+    plt.grid(True)
+    plt.xlabel("时间/天")
     plt.ylabel(f"每日复习+学习卡片数量({period_len}天平均)")
     plt.legend()
     plt.show()
