@@ -1,7 +1,5 @@
 import numpy as np
-
-a = -16
-b = 0.23
+from init import *
 
 
 def cal_SInc_log(S, R):
@@ -13,7 +11,7 @@ def cal_SInc_exp(S, R):
 
 
 def cal_SInc_linear(S, R):
-    return - a * np.power(S, -b) * (1-R) * 1.4 + 1
+    return - a * np.power(S, -b) * (1 - R) * 1.4 + 1
 
 
 if __name__ == "__main__":

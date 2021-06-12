@@ -1,18 +1,9 @@
-import random
 from collections import deque
 
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy import optimize
 
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
-plt.rcParams['figure.figsize'] = (8.0, 4.0)
-plt.rcParams['figure.dpi'] = 300
-
-start_stability = 1
-a = -16
-b = 0.23
+from init import *
 
 
 class Item:

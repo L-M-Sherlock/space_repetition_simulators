@@ -1,14 +1,10 @@
 import pandas as pd
 import seaborn as sns
-import matplotlib.pylab as plt
+from init import *
 from matplotlib.pyplot import MultipleLocator
 
 sns.set(style="white")
 sns.set(font='SimHei')
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
-plt.rcParams['figure.figsize'] = (12.0, 4.0)
-plt.rcParams['figure.dpi'] = 300
 
 
 def _compute_bin_p_recall(group):
@@ -30,11 +26,11 @@ def _compute_bin_count(group):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv("revlog1622051996.tsv", sep="\t", keep_default_na=False)
+    df = pd.read_csv("revlog1622191885.tsv", sep="\t", keep_default_na=False)
     fb_group = df.groupby(["fb_history"])
 
     for fb_history, fb_batch in fb_group:
-        if len(fb_history) > 12 or len(fb_history) < 2 or '0' in fb_history or len(fb_batch) < 10000:
+        if len(fb_history) > 8 or len(fb_history) < 2 or '0' in fb_history or len(fb_batch) < 10000:
             continue
 
         global_count = fb_batch.groupby(
@@ -120,4 +116,3 @@ if __name__ == '__main__':
                 # plt.show()
                 plt.savefig('./plot/' + title + '.jpg')
                 plt.close()
-

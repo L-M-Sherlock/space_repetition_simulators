@@ -1,9 +1,5 @@
 import numpy as np
-import random
-import matplotlib.pyplot as plt
-
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+from init import *
 
 interval_rate = 2.5  # 间隔系数
 fix_retention = 0.9  # 间隔系数为 2.5 时的保留率基准
