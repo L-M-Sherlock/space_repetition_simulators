@@ -1,7 +1,6 @@
 import pandas as pd
 import seaborn as sns
 from init import *
-from matplotlib.pyplot import MultipleLocator
 
 sns.set(style="white")
 sns.set(font='SimHei')
