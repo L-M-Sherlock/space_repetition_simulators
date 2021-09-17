@@ -128,3 +128,4 @@ dmypy.json
 .idea/
 *.jpg
 *.tsv
+.DS_Store
