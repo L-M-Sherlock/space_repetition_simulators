@@ -73,7 +73,7 @@ def diff_recall():
         for i in range(day_long - 1):
             repeats[i + 1] += repeats[i]
         plt.plot(repeats, "-", label=f'保留率{recall}')
-    plt.grid(True)
+    plt.xlabel("期望复习次数")
     plt.xlabel("时间/天")
     plt.legend()
     plt.show()
@@ -126,4 +126,4 @@ if __name__ == "__main__":
     r2 = optimize.fminbound(opt_stress, 0, 1)
     print(r2)
     diff_recall()
-    # diff_start()
+    diff_start()

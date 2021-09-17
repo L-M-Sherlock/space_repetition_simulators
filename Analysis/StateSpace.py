@@ -23,6 +23,7 @@ if __name__ == "__main__":
             r = i / 10
             sinc_log_matrix[i - 1][j - 1] = cal_SInc_log(s, r)
             esinc_log_matrix[i - 1][j - 1] = sinc_log_matrix[i - 1][j - 1] * r + 1 / s * (1 - r)
+    print(esinc_log_matrix)
     sinc_exp_matrix = np.empty(shape=[10, 10])
     esinc_exp_matrix = np.empty(shape=[10, 10])
     for i in range(1, 11):
@@ -31,6 +32,7 @@ if __name__ == "__main__":
             r = i / 10
             sinc_exp_matrix[i - 1][j - 1] = cal_SInc_exp(s, r)
             esinc_exp_matrix[i - 1][j - 1] = sinc_exp_matrix[i - 1][j - 1] * r + 1 / s * (1 - r)
+    print(esinc_exp_matrix)
     sinc_linear_matrix = np.empty(shape=[10, 10])
     esinc_linear_matrix = np.empty(shape=[10, 10])
     for i in range(1, 11):
@@ -39,4 +41,5 @@ if __name__ == "__main__":
             r = i / 10
             sinc_linear_matrix[i - 1][j - 1] = cal_SInc_linear(s, r)
             esinc_linear_matrix[i - 1][j - 1] = sinc_linear_matrix[i - 1][j - 1] * r + 1 / s * (1 - r)
+    print(esinc_exp_matrix)
     print("end")

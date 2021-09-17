@@ -25,7 +25,7 @@ def _compute_bin_count(group):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv("revlog1622191885.tsv", sep="\t", keep_default_na=False)
+    df = pd.read_csv("../revlog1622191885.tsv", sep="\t", keep_default_na=False)
     fb_group = df.groupby(["fb_history"])
 
     for fb_history, fb_batch in fb_group:

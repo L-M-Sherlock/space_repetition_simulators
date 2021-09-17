@@ -2,7 +2,7 @@
 #include <cmath>
 #include <numeric>
 
-#define max_s 300
+#define max_s 30000
 #define iterations 1000
 #define inf 10001
 #define start_stability 1

@@ -1,18 +1,7 @@
 import pandas as pd
 import numpy as np
 from init import *
-
-
-def stability_inc_log(s, r):
-    return (a * np.power(s, -b) * np.log(r)) + 1
-
-
-def stability_inc_linear(s, r):
-    return (a * np.power(s, -b) * (r - 1)) + 1
-
-
-def stability_inc_exp(s, r):
-    return (a * np.power(s, -b) * (- np.exp(1 - r) + 1)) + 1
+from sinc_fun import stability_inc_linear, stability_inc_log, stability_inc_exp
 
 
 def review_value(s, r):
