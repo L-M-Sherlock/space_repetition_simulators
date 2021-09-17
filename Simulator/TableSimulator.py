@@ -1,22 +1,20 @@
-import pandas as pd
-import numpy as np
 from init import *
 from sinc_fun import stability_inc_linear, stability_inc_log, stability_inc_exp
-
+import pandas as pd
+import numpy as np
+import random
 
 if __name__ == "__main__":
-    expected_recalls = [0.7, 0.6, 0.5]
-    period_len = 60  # 滚动平均区间
-    learn_days = 360 * 10  # 模拟时长
-    deck_size = 500000  # 新卡片总量
-    card_per_day_limit = 200
-    learn_limit = 200
-    review_limit = 200
-
+    expected_recalls = [0.9, 0.7, 0.5, 0.3]
+    period_len = 14  # 滚动平均区间
+    learn_days = 360  # 模拟时长
+    deck_size = 50000  # 新卡片总量
+    card_per_day_limit = 100
+    learn_limit = 100
+    review_limit = 100
     for i, v in enumerate(expected_recalls):
         expected_recall = expected_recalls[i]
-        random.seed(114)
-
+        random.seed(114514)
         new_card_per_day = np.array([0.0] * learn_days)
         new_card_per_day_average_per_period = np.array([0.0] * learn_days)
         workload_per_day = np.array([0.0] * learn_days)
@@ -29,7 +27,7 @@ if __name__ == "__main__":
             ('fb_history', str),
             ('review_date', int),
             ('R', float),
-            ('S', int),
+            ('S', float),
             ('D', float),
             ('ivl', int),
         ])
@@ -39,9 +37,8 @@ if __name__ == "__main__":
         for day in range(learn_days):
             df_card["ivl"] = day - df_card["review_date"]
             df_card["R"] = np.exp(np.log(0.9) * df_card["ivl"] / df_card["S"])
-            record_per_day[day] = df_card[df_card["S"] >= start_stability]["R"].sum()
-            review = df_card[(df_card["S"] >= start_stability) & (df_card["R"] <= expected_recall)].sort_values(
-                by=['R', 'S'], ascending=[True, True]).index[
+            record_per_day[day] = df_card["R"].sum()
+            review = df_card[df_card["R"] <= expected_recall].sort_values(by=['R', 'S'], ascending=[True, True]).index[
                      :review_limit]
             real_review_num = len(review)
             for idx in review:
@@ -54,9 +51,7 @@ if __name__ == "__main__":
                     df_card.iat[idx, 1] += '0'
                     df_card.iat[idx, 4] = start_stability
 
-            learn = df_card[df_card["S"] < start_stability].index[
-                    :min(learn_limit, card_per_day_limit - real_review_num)]
-
+            learn = df_card[df_card["S"].isna()].index[:min(learn_limit, card_per_day_limit - real_review_num)]
             for idx in learn:
                 df_card.iat[idx, 2] = day
                 df_card.iat[idx, 4] = start_stability
@@ -73,7 +68,7 @@ if __name__ == "__main__":
                 new_card_per_day_average_per_period[day] = np.true_divide(new_card_per_day[:day + 1].sum(), day + 1)
                 workload_per_day_average_per_period[day] = np.true_divide(workload_per_day[:day + 1].sum(), day + 1)
 
-        recall = df_card[df_card["S"] >= start_stability]["R"].sum()
+        recall = df_card["R"].sum()
         total_learned = int(sum(new_card_per_day))
         total_reviewed = int(sum(workload_per_day)) - total_learned
 
