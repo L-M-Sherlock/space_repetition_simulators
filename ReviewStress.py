@@ -33,9 +33,9 @@ def opt_stress(r):
 
 
 def diff_recall():
-    num_samples = 10000
-    day_long = 2000
-    recalls = [-1, 0, 0.8, 0.6, 0.2]
+    num_samples = 100000
+    day_long = 1000
+    recalls = [0.6, 0.65, 0.7]
     for idx, recall in enumerate(recalls):
         repeats = np.array([0.0 for _ in range(day_long)])
         for _ in range(num_samples):
@@ -52,16 +52,21 @@ def diff_recall():
                         recall = optimize.fminbound(min_stress_log, 0, 1)
                     elif recalls[idx] == -1:
                         recall = optimize.fminbound(max_expected_s, 0, 1)
+                    elif recalls[idx] == -2:
+                        recall = 0.6 + min(s, 300)/3000
+                    elif recalls[idx] == -3:
+                        recall = 0.7 - min(s, 300)/3000
                 ivl = round(s * np.log(recall) / np.log(0.9))
                 day += ivl
-                # if ivl + day < day_long:
-                #     repeats[day + ivl] += 1
-                for i in range(ivl):
-                    if day >= day_long:
-                        break
-                    repeats[day - i - 1] += 1 / ivl
+                if day < day_long:
+                    repeats[day] += 1
+                # for i in range(ivl):
+                #     if day >= day_long:
+                #         break
+                #     repeats[day - i - 1] += 1 / ivl
                 if random.random() < recall:
                     s *= a * np.power(s, -b) * np.log(recall) + 1
+                    # s *= - a * np.power(s, -b) * (1 - recall) * 1.4 + 1
                 else:
                     s = 1
         repeats = repeats / num_samples
@@ -77,8 +82,8 @@ def diff_recall():
 def diff_start():
     num_samples = 10000
     day_long = 3000
-    starts = [1, 2, 4, 8]
-    recall = 0.9
+    starts = [1, 5, 25, 125]
+    recall = 0.6
     repeats = []
     for start in starts:
         repeats.append(np.array([0.0 for _ in range(day_long)]))
@@ -121,4 +126,4 @@ if __name__ == "__main__":
     r2 = optimize.fminbound(opt_stress, 0, 1)
     print(r2)
     diff_recall()
-    diff_start()
+    # diff_start()

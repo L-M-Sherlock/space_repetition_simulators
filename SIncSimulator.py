@@ -1,6 +1,8 @@
 from collections import deque
 
 import numpy as np
+import pandas as pd
+import time
 from scipy import optimize
 
 from init import *
@@ -92,16 +94,16 @@ class Item:
 
 
 if __name__ == '__main__':
-    forget_indexes = [-2, -1, 0, 0.4]
+    forget_indexes = [0.2]
     period_len = 60  # 滚动平均区间
-    learn_days = 4000  # 模拟时长
+    learn_days = 300  # 模拟时长
     deck_size = 25000  # 新卡片总量
     for fi in range(len(forget_indexes)):
         items_all = [Item() for _ in range(0, deck_size)]
         items = deque(items_all)
         item_per_day = [[] for _ in range(0, learn_days)]
         card_per_day_limit = 10000  # 每日学习总上限
-        new_card_per_day_limit = 50
+        new_card_per_day_limit = 100
         card_per_day = [{'forget': 0, 'recall': 0, 'new': 0} for _ in range(0, learn_days)]
         end_day = 0
         forget_index = forget_indexes[fi]  # 遗忘比率
@@ -141,12 +143,12 @@ if __name__ == '__main__':
                 item.review(day)
                 today_revlog[idx] = [ivl_history, fb_history, item.used_ivl, item.feedback, round(item.R, 3), old_S,
                                      item.difficulty]
-                # forget_index = random.triangular(0.1, 0.4, 0.2)
-                # ivl = int(round(item.interval_spread(1 - forget_index)))
-                if forget_index > 0:
-                    ivl = int(round(item.interval_threshold(1 - forget_index)))
-                else:
-                    ivl = int(round(item.interval_optimize(forget_index)))
+                forget_index = random.triangular(0.1, 0.4, 0.2)
+                ivl = int(round(item.interval_spread(1 - forget_index)))
+                # if forget_index > 0:
+                #     ivl = int(round(item.interval_threshold(1 - forget_index)))
+                # else:
+                #     ivl = int(round(item.interval_optimize(forget_index)))
                 # ivl = int(round(ivl) * 5 * round(random.uniform(0.15, 1.04), 1))
                 # ivl = item.interval_max_esinc()
                 delay = 0
@@ -165,8 +167,8 @@ if __name__ == '__main__':
             if item.last_review > 0:
                 item.review(learn_days + 1)
                 recall += item.R
-        # result = pd.DataFrame(revlog, columns=["ivl_history", "fb_history", "used_ivl", "feedback", "R", "S", "D"])
-        # result.to_csv(f"revlog{int(time.time())}.tsv", sep="\t", index=False)
+        result = pd.DataFrame(revlog, columns=["ivl_history", "fb_history", "used_ivl", "feedback", "R", "S", "D"])
+        result.to_csv(f"revlog{int(time.time())}.tsv", sep="\t", index=False)
         total_learned = int(sum(new_card_per_day))
         total_reviewed = int(sum(workload_per_day)) - total_learned
 
