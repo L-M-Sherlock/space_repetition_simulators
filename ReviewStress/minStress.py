@@ -5,22 +5,22 @@ from sinc_fun import stability_inc_linear, stability_inc_log, stability_inc_exp
 
 
 def review_value(s, r):
-    return - (s * r * (stability_inc_log(s, r) - 1) + start_stability * (1 - r)) / np.log(0.9)
+    return - (s * r * (stability_inc_exp(s, r) - 1) + start_stability * (1 - r)) / np.log(0.9)
 
 
 if __name__ == "__main__":
+    random.seed(114)
     values = [0]
     period_len = 60  # 滚动平均区间
-    learn_days = 360 * 10  # 模拟时长
-    deck_size = 500000  # 新卡片总量
-    card_per_day_limit = 200
-    learn_limit = 200
-    review_limit = 200
-    review_table = np.loadtxt(open("30000-stress.csv", "rb"), delimiter=",", skiprows=0)
+    learn_days = 360 * 3  # 模拟时长
+    deck_size = 100000  # 新卡片总量
+    card_per_day_limit = 400
+    learn_limit = 400
+    review_limit = 400
+    review_table = np.loadtxt(open("30000-exp-stress.csv", "rb"), delimiter=",", skiprows=0)
 
     for i, v in enumerate(values):
         value = values[i]
-        random.seed(114)
 
         new_card_per_day = np.array([0.0] * learn_days)
         new_card_per_day_average_per_period = np.array([0.0] * learn_days)
@@ -62,7 +62,7 @@ if __name__ == "__main__":
                 df_card.iat[idx, 0] += str(df_card.iat[idx, 6]) + ','
                 if random.random() < df_card.iat[idx, 3]:
                     df_card.iat[idx, 1] += '1'
-                    df_card.iat[idx, 4] *= stability_inc_log(df_card.iat[idx, 4], df_card.iat[idx, 3])
+                    df_card.iat[idx, 4] *= stability_inc_exp(df_card.iat[idx, 4], df_card.iat[idx, 3])
                     df_card.iat[idx, 5] = review_table[df_card.iat[idx, 4] - 1][1]
                 else:
                     df_card.iat[idx, 1] += '0'
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         plt.figure(2)
         plt.plot(new_card_per_day_average_per_period, label=f'learned={total_learned}')
         plt.ylim((0, card_per_day_limit + 10))
-        print(df_card["R"].min())
+        print(df_card[df_card["R"] > 0]["R"].mean())
         # plt.title(f"{learn_days}天-遗忘比例{1 - expected_recall:.2f}-总学习量{total_learned}-记忆保留总量{int(recall)}")
 
         # plt.show()

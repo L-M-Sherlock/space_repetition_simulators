@@ -128,5 +128,7 @@ dmypy.json
 .idea/
 *.jpg
 *.tsv
+*.csv
 .DS_Store
 /ReviewStress/cmake-build-debug/
+/cmake-build-debug/

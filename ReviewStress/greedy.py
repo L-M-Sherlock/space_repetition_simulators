@@ -4,17 +4,17 @@ from init import *
 from sinc_fun import stability_inc_linear, stability_inc_log, stability_inc_exp
 
 if __name__ == "__main__":
+    random.seed(114)
     value_thresholds = [0.2, 0.3, 0.4]
     period_len = 60  # 滚动平均区间
     learn_days = 360 * 3  # 模拟时长
-    deck_size = 50000  # 新卡片总量
-    card_per_day_limit = 200
-    learn_limit = 200
-    review_limit = 200
+    deck_size = 100000  # 新卡片总量
+    card_per_day_limit = 400
+    learn_limit = 400
+    review_limit = 400
 
     for i, v in enumerate(value_thresholds):
         value = value_thresholds[i]
-        random.seed(114)
 
         new_card_per_day = np.array([0.0] * learn_days)
         new_card_per_day_average_per_period = np.array([0.0] * learn_days)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         plt.figure(2)
         plt.plot(new_card_per_day_average_per_period, label=f'threshold={value:.2f}|learned={total_learned}')
         plt.ylim((0, card_per_day_limit + 10))
-        print(df_card["R"].min())
+        print(df_card[df_card["R"] > 0]["R"].mean())
     # plt.title(f"{learn_days}天-遗忘比例{1 - expected_recall:.2f}-总学习量{total_learned}-记忆保留总量{int(recall)}")
 
     # plt.show()

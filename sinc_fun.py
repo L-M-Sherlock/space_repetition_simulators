@@ -1,6 +1,7 @@
 from init import a, b
 import numpy as np
 
+
 def stability_inc_log(s, r):
     return (a * np.power(s, -b) * np.log(r)) + 1
 
