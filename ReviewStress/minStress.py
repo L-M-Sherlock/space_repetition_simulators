@@ -3,20 +3,15 @@ import numpy as np
 from init import *
 from sinc_fun import stability_inc_linear, stability_inc_log, stability_inc_exp
 
-
-def review_value(s, r):
-    return - (s * r * (stability_inc_exp(s, r) - 1) + start_stability * (1 - r)) / np.log(0.9)
-
-
 if __name__ == "__main__":
     random.seed(114)
     values = [0]
     period_len = 60  # 滚动平均区间
     learn_days = 360 * 3  # 模拟时长
     deck_size = 100000  # 新卡片总量
-    card_per_day_limit = 400
-    learn_limit = 400
-    review_limit = 400
+    card_per_day_limit = 200
+    learn_limit = 200
+    review_limit = 180
     review_table = np.loadtxt(open("30000-exp-stress.csv", "rb"), delimiter=",", skiprows=0)
 
     for i, v in enumerate(values):
@@ -34,7 +29,7 @@ if __name__ == "__main__":
             ('fb_history', str),
             ('review_date', int),
             ('R', float),
-            ('S', int),
+            ('S', float),
             ('V', float),
             ('ivl', int),
             ('diff', float)
@@ -63,14 +58,15 @@ if __name__ == "__main__":
                 if random.random() < df_card.iat[idx, 3]:
                     df_card.iat[idx, 1] += '1'
                     df_card.iat[idx, 4] *= stability_inc_exp(df_card.iat[idx, 4], df_card.iat[idx, 3])
-                    df_card.iat[idx, 5] = review_table[df_card.iat[idx, 4] - 1][1]
+                    df_card.iat[idx, 5] = review_table[round(df_card.iat[idx, 4]) - 1][1]
                 else:
                     df_card.iat[idx, 1] += '0'
                     df_card.iat[idx, 4] = start_stability
-                    df_card.iat[idx, 5] = review_table[df_card.iat[idx, 4] - 1][1]
+                    df_card.iat[idx, 5] = review_table[round(df_card.iat[idx, 4]) - 1][1]
 
-            learn = df_card[df_card["S"] < start_stability].index[
-                    :min(learn_limit, card_per_day_limit - real_review_num)]
+            # learn = df_card[df_card["S"] < start_stability].index[
+            #         :min(learn_limit, card_per_day_limit - real_review_num)]
+            learn = df_card[df_card["S"].isna()].index[:min(learn_limit, card_per_day_limit - real_review_num)]
             for idx in learn:
                 df_card.iat[idx, 2] = day
                 df_card.iat[idx, 4] = start_stability
@@ -99,7 +95,8 @@ if __name__ == "__main__":
         plt.figure(2)
         plt.plot(new_card_per_day_average_per_period, label=f'learned={total_learned}')
         plt.ylim((0, card_per_day_limit + 10))
-        print(df_card[df_card["R"] > 0]["R"].mean())
+        print("R_min", df_card["R"].min())
+        print("R_mean", df_card[df_card["R"] > 0]["R"].mean())
         # plt.title(f"{learn_days}天-遗忘比例{1 - expected_recall:.2f}-总学习量{total_learned}-记忆保留总量{int(recall)}")
 
         # plt.show()
@@ -121,4 +118,9 @@ if __name__ == "__main__":
     plt.ylabel(f"每日新学数量({period_len}天平均)")
     plt.legend()
     plt.grid(True)
+    plt.show()
+    plt.hist(x=df_card['R'], range=(0, 1), bins=20)
+    plt.ylabel("count")
+    plt.xlabel('R')
+    plt.title(f"每日学习上限:{card_per_day_limit}-学习天数{learn_days}")
     plt.show()

@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 from init import *
 from sinc_fun import stability_inc_linear, stability_inc_log, stability_inc_exp
 import pandas as pd
@@ -5,13 +7,14 @@ import numpy as np
 import random
 
 if __name__ == "__main__":
-    expected_recalls = [0.9, 0.7, 0.5, 0.3]
-    period_len = 14  # 滚动平均区间
-    learn_days = 360  # 模拟时长
-    deck_size = 50000  # 新卡片总量
-    card_per_day_limit = 100
-    learn_limit = 100
-    review_limit = 100
+    expected_recalls = [0.8]
+    period_len = 60  # 滚动平均区间
+    learn_days = 360 * 3  # 模拟时长
+    deck_size = 100000  # 新卡片总量
+    card_per_day_limit = 200
+    learn_limit = 200
+    review_limit = 180
+    easy_first = False
     for i, v in enumerate(expected_recalls):
         expected_recall = expected_recalls[i]
         random.seed(114514)
@@ -38,15 +41,21 @@ if __name__ == "__main__":
             df_card["ivl"] = day - df_card["review_date"]
             df_card["R"] = np.exp(np.log(0.9) * df_card["ivl"] / df_card["S"])
             record_per_day[day] = df_card["R"].sum()
-            review = df_card[df_card["R"] <= expected_recall].sort_values(by=['R', 'S'], ascending=[True, True]).index[
-                     :review_limit]
+            if easy_first:
+                review = df_card[df_card["R"] <= expected_recall].sort_values(by=['R', 'S'],
+                                                                              ascending=[False, False]).index[
+                         :review_limit]
+            else:
+                review = df_card[df_card["R"] <= expected_recall].sort_values(by=['R', 'S'],
+                                                                              ascending=[True, True]).index[
+                         :review_limit]
             real_review_num = len(review)
             for idx in review:
                 df_card.iat[idx, 2] = day
                 df_card.iat[idx, 0] += str(df_card.iat[idx, 6]) + ','
                 if random.random() < df_card.iat[idx, 3]:
                     df_card.iat[idx, 1] += '1'
-                    df_card.iat[idx, 4] *= stability_inc_log(df_card.iat[idx, 4], df_card.iat[idx, 3])
+                    df_card.iat[idx, 4] *= stability_inc_exp(df_card.iat[idx, 4], df_card.iat[idx, 3])
                 else:
                     df_card.iat[idx, 1] += '0'
                     df_card.iat[idx, 4] = start_stability
@@ -79,7 +88,8 @@ if __name__ == "__main__":
         plt.figure(2)
         plt.plot(new_card_per_day_average_per_period, label=f'threshold={expected_recall:.2f}|learned={total_learned}')
         plt.ylim((0, card_per_day_limit + 10))
-        print(df_card["R"].min())
+        print("R_min", df_card["R"].min())
+        print("R_mean", df_card[df_card["R"] > 0]["R"].mean())
         # plt.title(f"{learn_days}天-遗忘比例{1 - expected_recall:.2f}-总学习量{total_learned}-记忆保留总量{int(recall)}")
 
         # plt.show()
@@ -90,15 +100,20 @@ if __name__ == "__main__":
         # plt.ylabel(f"每日复习卡片数量({period_len}天平均)")
         # plt.show()
     plt.figure(1)
-    plt.title(f"每日学习上限:{card_per_day_limit}-学习天数{learn_days}")
+    plt.title(f"每日学习上限:{card_per_day_limit}-学习天数{learn_days}-简单优先{easy_first}")
     plt.xlabel("时间/天")
     plt.ylabel("记住的单词数量期望E(W)")
     plt.legend()
     plt.grid(True)
     plt.figure(2)
-    plt.title(f"每日学习上限:{card_per_day_limit}-学习天数{learn_days}")
+    plt.title(f"每日学习上限:{card_per_day_limit}-学习天数{learn_days}-简单优先{easy_first}")
     plt.xlabel("时间/天")
     plt.ylabel(f"每日新学数量({period_len}天平均)")
     plt.legend()
     plt.grid(True)
+    plt.show()
+    plt.hist(x=df_card['R'], range=(0, 1), bins=20)
+    plt.ylabel("count")
+    plt.xlabel('R')
+    plt.title(f"每日学习上限:{card_per_day_limit}-学习天数{learn_days}-简单优先{easy_first}")
     plt.show()

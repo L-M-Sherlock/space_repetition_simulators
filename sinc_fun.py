@@ -12,3 +12,7 @@ def stability_inc_linear(s, r):
 
 def stability_inc_exp(s, r):
     return (a * np.power(s, -b) * (- np.exp(1 - r) + 1)) + 1
+
+
+def stability_inc_slow(s, r):
+    return (- a * np.power(s, -b) * (1 - r)**2) + 1
