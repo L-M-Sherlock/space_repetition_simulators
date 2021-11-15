@@ -58,6 +58,7 @@ int main() {
     }
     FILE *f;
     f = fopen("30000-exp-stress.csv", "w");
+    fprintf(f, "最优复习压力,最优可提取性,复习后稳定性\n");
     for (int i = 1; i < max_s; i++)
         fprintf(f, "%lf,%lf,%d\n", stresses[i], review_r[i], next_s[i]);
     fclose(f);
