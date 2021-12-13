@@ -4,4 +4,4 @@ project(space_repetition_simulators)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(space_repetition_simulators
-        ReviewStress/optStress.cpp)
+        ReviewStress/optStressExp.cpp)
