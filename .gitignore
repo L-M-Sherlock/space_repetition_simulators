@@ -129,6 +129,7 @@ dmypy.json
 *.jpg
 *.tsv
 *.csv
+*.xlsx
 .DS_Store
 /ReviewStress/cmake-build-debug/
 /cmake-build-debug/

@@ -1,17 +1,16 @@
 import numpy as np
 from init import *
 
-
 def cal_SInc_log(S, R):
     return a * np.power(S, -b) * np.log(R) + 1
 
 
 def cal_SInc_exp(S, R):
-    return - a * np.power(S, -b) * (np.exp(1 - R) - 1) * 1.1 + 1
+    return - a * np.power(S, -b) * (np.exp(1.33 * (1 - R)) - 1) + 1
 
 
 def cal_SInc_linear(S, R):
-    return - a * np.power(S, -b) * (1 - R) * 1.4 + 1
+    return - a * np.power(S, -b) * (1 - R) * 2.56 + 1
 
 
 if __name__ == "__main__":
